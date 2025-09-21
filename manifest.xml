@@ -14,7 +14,11 @@
   <Description DefaultValue="Trace and navigate through Excel formula references with ease" />
   <IconUrl DefaultValue="https://via.placeholder.com/32x32/0078d4/ffffff?text=FT" />
   <HighResolutionIconUrl DefaultValue="https://via.placeholder.com/64x64/0078d4/ffffff?text=FT" />
-  <SupportUrl DefaultValue="https://github.com/gauravgrover9113-a11y/formula-tracer-addin" />
+  <SupportUrl DefaultValue="https://www.contoso.com/help" />
+  
+  <AppDomains>
+    <AppDomain>https://gauravgrover9113-a11y.github.io</AppDomain>
+  </AppDomains>
   
   <Hosts>
     <Host Name="Workbook" />
@@ -26,7 +30,7 @@
     </Sets>
   </Requirements>
   
-  <!-- IMPORTANT: Replace YOUR-USERNAME with your actual GitHub username -->
+  <!-- REPLACE YOUR-USERNAME with your actual GitHub username -->
   <DefaultSettings>
     <SourceLocation DefaultValue="https://gauravgrover9113-a11y.github.io/formula-tracer-addin/taskpane.html"/>
   </DefaultSettings>
@@ -83,8 +87,8 @@
         <bt:Image id="Icon.80x80" DefaultValue="https://via.placeholder.com/80x80/0078d4/ffffff?text=FT"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/gauravgrover9113-a11y/formula-tracer-addin"/>
-        <!-- IMPORTANT: Replace YOUR-USERNAME with your actual GitHub username -->
+        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://www.contoso.com/help"/>
+        <!-- REPLACE YOUR-USERNAME with your actual GitHub username -->
         <bt:Url id="Taskpane.Url" DefaultValue="https://gauravgrover9113-a11y.github.io/formula-tracer-addin/taskpane.html"/>
       </bt:Urls>
       <bt:ShortStrings>
