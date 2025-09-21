@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formula Tracer</title>
+    <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/11.0.0/css/fabric.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #faf9f8;
+        }
+
+        .task-pane {
+            padding: 16px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #edebe9;
+        }
+
+        .header h2 {
+            margin: 0;
+            color: #323130;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #605e5c;
+            padding: 4px;
+            border-radius: 2px;
+        }
+
+        .close-btn:hover {
+            background-color: #f3f2f1;
+            color: #323130;
+        }
+
+        .formula-section {
+            margin-bottom: 16px;
+        }
+
+        .formula-label {
+            font-weight: 600;
+            color: #323130;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .formula-display {
+            background-color: #ffffff;
+            border: 1px solid #d2d0ce;
+            border-radius: 2px;
+            padding: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            color: #323130;
+            max-height: 80px;
+            overflow-y: auto;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        .references-section {
+            flex: 1;
+            margin-bottom: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .references-label {
+            font-weight: 600;
+            color: #323130;
+            margin-bottom: 8px;
+        }
+
+        .references-list {
+            background-color: #ffffff;
+            border: 1px solid #d2d0ce;
+            border-radius: 2px;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 200px;
+        }
+
+        .reference-item {
+            padding: 12px;
+            border-bottom: 1px solid #f3f2f1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .reference-item:last-child {
+            border-bottom: none;
+        }
+
+        .reference-item:hover {
+            background-color: #f8f6f4;
+        }
+
+        .reference-item.selected {
+            background-color: #deecf9;
+            border-left: 3px solid #106ebe;
+        }
+
+        .reference-icon {
+            margin-right: 12px;
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .reference-details {
+            flex: 1;
+        }
+
+        .reference-address {
+            font-weight: 600;
+            color: #323130;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        .reference-description {
+            font-size: 12px;
+            color: #605e5c;
+            margin-top: 2px;
+        }
+
+        .current-location {
+            background-color: #fff4ce;
+            border: 1px solid #fde047;
+            border-radius: 2px;
+            padding: 8px 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
+        .current-location-label {
+            font-weight: 600;
+            color: #323130;
+        }
+
+        .current-location-value {
+            color: #605e5c;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #d2d0ce;
+            border-radius: 2px;
+            background-color: #ffffff;
+            color: #323130;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #f8f6f4;
+            border-color: #c8c6c4;
+        }
+
+        .btn-primary {
+            background-color: #0078d4;
+            color: #ffffff;
+            border-color: #0078d4;
+        }
+
+        .btn-primary:hover {
+            background-color: #106ebe;
+            border-color: #106ebe;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #605e5c;
+        }
+
+        .error-message {
+            display: none;
+            background-color: #fef7f7;
+            border: 1px solid #f1aeb5;
+            color: #d13438;
+            padding: 12px;
+            border-radius: 2px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .no-formula-message {
+            text-align: center;
+            color: #605e5c;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+
+        .startup-controls {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .trace-btn {
+            background-color: #0078d4;
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        .trace-btn:hover {
+            background-color: #106ebe;
+        }
+
+        .instructions {
+            margin-top: 16px;
+            font-size: 14px;
+            color: #605e5c;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body class="ms-Fabric">
+    <div class="task-pane">
+        <!-- Startup View -->
+        <div id="startupView">
+            <div class="header">
+                <h2>Formula Tracer</h2>
+            </div>
+            <div class="startup-controls">
+                <button id="traceFormulaBtn" class="trace-btn">Trace Formula</button>
+                <div class="instructions">
+                    Select a cell with a formula and click "Trace Formula" to analyze its references and navigate through dependencies.
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Tracer View -->
+        <div id="tracerView" style="display: none; height: 100%; flex-direction: column;">
+            <div class="header">
+                <h2>Formula Tracer</h2>
+                <button id="closeBtn" class="close-btn">✕</button>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+            <div class="loading" id="loading">Analyzing formula...</div>
+
+            <div class="formula-section">
+                <span class="formula-label">Formula:</span>
+                <div class="formula-display" id="formulaDisplay"></div>
+            </div>
+
+            <div class="current-location" id="currentLocation">
+                <span class="current-location-label">Current Location:</span>
+                <span class="current-location-value" id="currentLocationValue">A1</span>
+            </div>
+
+            <div class="references-section">
+                <div class="references-label">References:</div>
+                <div class="references-list" id="referencesList">
+                    <div class="no-formula-message">No references found in formula</div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button id="backBtn" class="btn" disabled>Back</button>
+                <button id="okBtn" class="btn btn-primary">OK</button>
+                <button id="cancelBtn" class="btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <script>
+        // Formula Tracer Add-in Implementation
+        class FormulaTracer {
+            constructor() {
+                this.originalCell = null;
+                this.navigationHistory = [];
+                this.currentReferences = [];
+                this.selectedReferenceIndex = -1;
+                
+                this.init();
+            }
+
+            init() {
+                Office.onReady(() => {
+                    this.setupEventListeners();
+                    console.log('Formula Tracer initialized successfully');
+                });
+            }
+
+            setupEventListeners() {
+                // Startup view
+                document.getElementById('traceFormulaBtn').addEventListener('click', () => this.startTracing());
+                
+                // Main view
+                document.getElementById('closeBtn').addEventListener('click', () => this.closeTracer());
+                document.getElementById('backBtn').addEventListener('click', () => this.navigateBack());
+                document.getElementById('okBtn').addEventListener('click', () => this.closeTracer());
+                document.getElementById('cancelBtn').addEventListener('click', () => this.closeTracer());
+                
+                // References list click handling
+                document.getElementById('referencesList').addEventListener('click', (e) => {
+                    const referenceItem = e.target.closest('.reference-item');
+                    if (referenceItem) {
+                        const index = parseInt(referenceItem.dataset.index);
+                        this.navigateToReference(index);
+                    }
+                });
+            }
+
+            async startTracing() {
+                try {
+                    this.showLoading(true);
+                    this.hideError();
+                    
+                    await Excel.run(async (context) => {
+                        // Get the selected cell
+                        const range = context.workbook.getSelectedRange();
+                        range.load(['address', 'formulas', 'worksheet']);
+                        
+                        await context.sync();
+                        
+                        // Store original cell location
+                        this.originalCell = {
+                            address: range.address,
+                            worksheetName: range.worksheet.name
+                        };
+                        
+                        // Check if cell has formula
+                        const formula = range.formulas[0][0];
+                        if (!formula || !formula.toString().startsWith('=')) {
+                            throw new Error('Selected cell does not contain a formula');
+                        }
+                        
+                        // Parse the formula
+                        const references = await this.parseFormula(formula, context);
+                        
+                        // Display the tracer view
+                        this.displayTracer(formula, references);
+                        this.updateCurrentLocation(range.address);
+                        
+                        // Initialize navigation history
+                        this.navigationHistory = [{
+                            address: range.address,
+                            worksheetName: range.worksheet.name
+                        }];
+                    });
+                    
+                } catch (error) {
+                    this.showError(error.message || 'Failed to trace formula');
+                    console.error('Formula tracing error:', error);
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            async parseFormula(formula, context) {
+                const references = [];
+                
+                // Regular expressions for different reference types
+                const patterns = {
+                    // Sheet references like 'Sheet Name'!A1:B2
+                    sheetRef: /'([^']+)'!\$?([A-Z]+)\$?(\d+)(?::\$?([A-Z]+)\$?(\d+))?/g,
+                    // Simple sheet references like Sheet1!A1:B2 (no quotes)
+                    simpleSheetRef: /([A-Za-z_][A-Za-z0-9_]*)\!\$?([A-Z]+)\$?(\d+)(?::\$?([A-Z]+)\$?(\d+))?/g,
+                    // Cell references like A1, B2:C5
+                    cellRef: /\$?([A-Z]+)\$?(\d+)(?::\$?([A-Z]+)\$?(\d+))?/g,
+                    // Named ranges (letters, numbers, underscore, starting with letter or underscore)
+                    namedRange: /\b([A-Za-z_][A-Za-z0-9_]*)\b/g
+                };
+
+                // Track processed positions to avoid duplicates
+                const processedRanges = new Set();
+                
+                // Process sheet references with quotes
+                let match;
+                while ((match = patterns.sheetRef.exec(formula)) !== null) {
+                    const sheetName = match[1];
+                    const startCol = match[2];
+                    const startRow = match[3];
+                    const endCol = match[4] || startCol;
+                    const endRow = match[5] || startRow;
+                    
+                    const address = endCol === startCol && endRow === startRow 
+                        ? `${startCol}${startRow}`
+                        : `${startCol}${startRow}:${endCol}${endRow}`;
+                    
+                    const fullAddress = `'${sheetName}'!${address}`;
+                    
+                    if (!processedRanges.has(fullAddress)) {
+                        references.push({
+                            type: 'sheetRef',
+                            address: address,
+                            fullAddress: fullAddress,
+                            sheetName: sheetName,
+                            description: `${sheetName} Sheet`,
+                            icon: '📋'
+                        });
+                        processedRanges.add(fullAddress);
+                    }
+                }
+
+                // Reset regex
+                patterns.sheetRef.lastIndex = 0;
+                
+                // Process simple sheet references (without quotes)
+                while ((match = patterns.simpleSheetRef.exec(formula)) !== null) {
+                    const sheetName = match[1];
+                    const startCol = match[2];
+                    const startRow = match[3];
+                    const endCol = match[4] || startCol;
+                    const endRow = match[5] || startRow;
+                    
+                    const address = endCol === startCol && endRow === startRow 
+                        ? `${startCol}${startRow}`
+                        : `${startCol}${startRow}:${endCol}${endRow}`;
+                    
+                    const fullAddress = `${sheetName}!${address}`;
+                    
+                    // Skip if it's already processed as a quoted reference
+                    if (!processedRanges.has(fullAddress) && !processedRanges.has(`'${sheetName}'!${address}`)) {
+                        references.push({
+                            type: 'sheetRef',
+                            address: address,
+                            fullAddress: fullAddress,
+                            sheetName: sheetName,
+                            description: `${sheetName} Sheet`,
+                            icon: '📋'
+                        });
+                        processedRanges.add(fullAddress);
+                    }
+                }
+
+                // Get current worksheet for cell references
+                const currentWorksheet = context.workbook.worksheets.getActiveWorksheet();
+                currentWorksheet.load('name');
+                await context.sync();
+
+                // Remove sheet references from formula to find cell references
+                let cleanFormula = formula;
+                processedRanges.forEach(ref => {
+                    cleanFormula = cleanFormula.replace(ref, '');
+                });
+
+                // Process cell references (current sheet)
+                patterns.cellRef.lastIndex = 0;
+                while ((match = patterns.cellRef.exec(cleanFormula)) !== null) {
+                    const startCol = match[1];
+                    const startRow = match[2];
+                    const endCol = match[3] || startCol;
+                    const endRow = match[4] || startRow;
+                    
+                    const address = endCol === startCol && endRow === startRow 
+                        ? `${startCol}${startRow}`
+                        : `${startCol}${startRow}:${endCol}${endRow}`;
+                    
+                    if (!processedRanges.has(address)) {
+                        references.push({
+                            type: 'cellRef',
+                            address: address,
+                            fullAddress: address,
+                            sheetName: currentWorksheet.name,
+                            description: 'Current Sheet',
+                            icon: '📊'
+                        });
+                        processedRanges.add(address);
+                    }
+                }
+
+                // Process named ranges
+                const namedRanges = context.workbook.names;
+                namedRanges.load('items/name');
+                await context.sync();
+
+                const namedRangeNames = namedRanges.items.map(nr => nr.name);
+                
+                // Clean formula for named range detection
+                let formulaForNames = formula;
+                references.forEach(ref => {
+                    formulaForNames = formulaForNames.replace(new RegExp(ref.fullAddress.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
+                });
+
+                patterns.namedRange.lastIndex = 0;
+                while ((match = patterns.namedRange.exec(formulaForNames)) !== null) {
+                    const name = match[1];
+                    
+                    if (namedRangeNames.includes(name) && !processedRanges.has(name)) {
+                        try {
+                            const namedRange = context.workbook.names.getItem(name);
+                            const referredRange = namedRange.getRange();
+                            referredRange.load(['address', 'worksheet']);
+                            await context.sync();
+                            
+                            references.push({
+                                type: 'namedRange',
+                                address: referredRange.address,
+                                fullAddress: name,
+                                sheetName: referredRange.worksheet.name,
+                                description: `Named Range → ${referredRange.worksheet.name}!${referredRange.address.split('!')[1]}`,
+                                icon: '🏷️',
+                                namedRangeName: name
+                            });
+                            processedRanges.add(name);
+                        } catch (error) {
+                            console.warn(`Could not resolve named range: ${name}`);
+                        }
+                    }
+                }
+
+                return references;
+            }
+
+            displayTracer(formula, references) {
+                // Show tracer view, hide startup view
+                document.getElementById('startupView').style.display = 'none';
+                document.getElementById('tracerView').style.display = 'flex';
+                
+                // Display formula
+                document.getElementById('formulaDisplay').textContent = formula;
+                
+                // Store references
+                this.currentReferences = references;
+                
+                // Display references
+                const referencesList = document.getElementById('referencesList');
+                
+                if (references.length === 0) {
+                    referencesList.innerHTML = '<div class="no-formula-message">No references found in formula</div>';
+                    return;
+                }
+                
+                referencesList.innerHTML = references.map((ref, index) => `
+                    <div class="reference-item" data-index="${index}">
+                        <span class="reference-icon">${ref.icon}</span>
+                        <div class="reference-details">
+                            <div class="reference-address">${ref.fullAddress}</div>
+                            <div class="reference-description">${ref.description}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            async navigateToReference(index) {
+                if (index < 0 || index >= this.currentReferences.length) return;
+                
+                try {
+                    const reference = this.currentReferences[index];
+                    
+                    // Update UI selection
+                    document.querySelectorAll('.reference-item').forEach((item, i) => {
+                        item.classList.toggle('selected', i === index);
+                    });
+                    
+                    this.selectedReferenceIndex = index;
+                    
+                    await Excel.run(async (context) => {
+                        let targetRange;
+                        
+                        if (reference.type === 'namedRange') {
+                            // Navigate to named range
+                            const namedRange = context.workbook.names.getItem(reference.namedRangeName);
+                            targetRange = namedRange.getRange();
+                        } else {
+                            // Navigate to cell/sheet reference
+                            if (reference.sheetName) {
+                                const worksheet = context.workbook.worksheets.getItem(reference.sheetName);
+                                targetRange = worksheet.getRange(reference.address);
+                            } else {
+                                targetRange = context.workbook.getActiveWorksheet().getRange(reference.address);
+                            }
+                        }
+                        
+                        targetRange.load(['address', 'worksheet']);
+                        targetRange.select();
+                        
+                        await context.sync();
+                        
+                        // Add to navigation history
+                        this.navigationHistory.push({
+                            address: targetRange.address,
+                            worksheetName: targetRange.worksheet.name
+                        });
+                        
+                        // Update current location display
+                        this.updateCurrentLocation(targetRange.address);
+                        
+                        // Enable back button
+                        document.getElementById('backBtn').disabled = false;
+                    });
+                    
+                } catch (error) {
+                    this.showError(`Failed to navigate to reference: ${error.message}`);
+                    console.error('Navigation error:', error);
+                }
+            }
+
+            async navigateBack() {
+                if (this.navigationHistory.length <= 1) return;
+                
+                try {
+                    // Remove current location
+                    this.navigationHistory.pop();
+                    
+                    // Get previous location
+                    const previous = this.navigationHistory[this.navigationHistory.length - 1];
+                    
+                    await Excel.run(async (context) => {
+                        const worksheet = context.workbook.worksheets.getItem(previous.worksheetName);
+                        const range = worksheet.getRange(previous.address);
+                        range.select();
+                        
+                        await context.sync();
+                        
+                        this.updateCurrentLocation(previous.address);
+                        
+                        // Disable back button if we're at the start
+                        if (this.navigationHistory.length <= 1) {
+                            document.getElementById('backBtn').disabled = true;
+                        }
+                    });
+                    
+                } catch (error) {
+                    this.showError(`Failed to navigate back: ${error.message}`);
+                    console.error('Back navigation error:', error);
+                }
+            }
+
+            async closeTracer() {
+                try {
+                    // Navigate back to original cell
+                    if (this.originalCell) {
+                        await Excel.run(async (context) => {
+                            const worksheet = context.workbook.worksheets.getItem(this.originalCell.worksheetName);
+                            const range = worksheet.getRange(this.originalCell.address);
+                            range.select();
+                            await context.sync();
+                        });
+                    }
+                    
+                    // Reset state
+                    this.resetState();
+                    
+                    // Show startup view
+                    document.getElementById('tracerView').style.display = 'none';
+                    document.getElementById('startupView').style.display = 'block';
+                    
+                } catch (error) {
+                    console.error('Close tracer error:', error);
+                    // Still reset the UI even if navigation fails
+                    this.resetState();
+                    document.getElementById('tracerView').style.display = 'none';
+                    document.getElementById('startupView').style.display = 'block';
+                }
+            }
+
+            resetState() {
+                this.originalCell = null;
+                this.navigationHistory = [];
+                this.currentReferences = [];
+                this.selectedReferenceIndex = -1;
+                
+                // Reset UI
+                document.getElementById('backBtn').disabled = true;
+                this.hideError();
+                this.showLoading(false);
+                
+                // Clear references selection
+                document.querySelectorAll('.reference-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+            }
+
+            updateCurrentLocation(address) {
+                document.getElementById('currentLocationValue').textContent = address;
+            }
+
+            showError(message) {
+                const errorElement = document.getElementById('errorMessage');
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+
+            hideError() {
+                document.getElementById('errorMessage').style.display = 'none';
+            }
+
+            showLoading(show) {
+                document.getElementById('loading').style.display = show ? 'block' : 'none';
+            }
+        }
+
+        // Initialize the Formula Tracer
+        const formulaTracer = new FormulaTracer();
+    </script>
+</body>
+</html>
